@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: fct_prices_daily
+    tests:
+      - not_null:
+          column_name: symbol
+      - not_null:
+          column_name: date
+    columns:
+      - name: ret_d1
+      - name: vol_20d
+
+  - name: fct_news_daily
+    tests:
+      - not_null:
+          column_name: symbol
+      - not_null:
+          column_name: date
+
+  - name: fct_earnings
+    tests:
+      - not_null:
+          column_name: symbol
+      - not_null:
+          column_name: date
+
+  - name: features_daily
+    tests:
+      - not_null:
+          column_name: symbol
+      - not_null:
+          column_name: date
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [symbol, date]

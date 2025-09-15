@@ -1,0 +1,15 @@
+# Airflow Providers you actually use
+apache-airflow-providers-common-sql==1.26.0
+apache-airflow-providers-smtp==1.7.1
+# add/remove providers as needed:
+# apache-airflow-providers-http
+# apache-airflow-providers-snowflake==5.3.0
+
+# Your task dependencies (used inside PythonOperator/BashOperator)
+pandas
+yfinance
+sqlalchemy
+psycopg2-binary
+python-dotenv
+scikit-learn
+plotly

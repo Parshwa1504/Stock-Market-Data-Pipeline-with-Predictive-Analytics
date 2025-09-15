@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: RAW
+    database: MARKETPULSE
+    tables:
+      - name: RAW_PRICES
+      - name: RAW_NEWS
+      - name: RAW_EARNINGS

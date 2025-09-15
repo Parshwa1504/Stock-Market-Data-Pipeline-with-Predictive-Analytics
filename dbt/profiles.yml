@@ -1,0 +1,15 @@
+marketpulse_dbt:               # <-- must match the 'profile:' in dbt_project.yml
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+      schema: STAGING          # default schema (dbt can still override per model)
+      threads: 4
+      client_session_keep_alive: true
+      query_tag: "airflow_dbt"

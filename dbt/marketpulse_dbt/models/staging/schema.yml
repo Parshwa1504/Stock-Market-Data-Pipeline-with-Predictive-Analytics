@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_prices
+    tests:
+      - not_null:
+          column_name: symbol
+      - not_null:
+          column_name: trade_time
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [symbol, trade_time]
+
+
+  - name: stg_news
+    tests:
+      - not_null:
+          column_name: symbol
+      - not_null:
+          column_name: published_at
+
+  - name: stg_earnings
+    tests:
+      - not_null:
+          column_name: symbol
+      - not_null:
+          column_name: report_date

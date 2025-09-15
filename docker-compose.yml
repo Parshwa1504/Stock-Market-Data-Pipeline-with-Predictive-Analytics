@@ -1,0 +1,148 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  airflow-init:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.3-python3.11}
+    user: "${AIRFLOW_UID:-50000}:0"  
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      _PIP_ADDITIONAL_REQUIREMENTS: >-
+        apache-airflow-providers-snowflake
+        apache-airflow-providers-common-sql
+        yfinance
+        pandas
+        numpy
+        requests
+        pyarrow
+        snowflake-connector-python
+        dbt-core==1.7.*
+        dbt-snowflake==1.7.*
+        scikit-learn==1.3.*
+        streamlit
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - .:/opt/project
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create --username admin --password admin
+      --firstname Admin --lastname User --role Admin --email admin@example.com
+      "
+
+  airflow-webserver:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.3-python3.11}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY:-some_long_random_string}
+      _PIP_ADDITIONAL_REQUIREMENTS: >-
+        apache-airflow-providers-snowflake
+        apache-airflow-providers-common-sql
+        yfinance
+        pandas
+        numpy
+        requests
+        pyarrow
+        snowflake-connector-python
+        dbt-core==1.7.*
+        dbt-snowflake==1.7.*
+        scikit-learn==1.3.*
+        streamlit
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - .:/opt/project
+    command: webserver
+
+  airflow-scheduler:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.3-python3.11}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY:-some_long_random_string}
+      _PIP_ADDITIONAL_REQUIREMENTS: >-
+        apache-airflow-providers-snowflake
+        apache-airflow-providers-common-sql
+        yfinance
+        pandas
+        numpy
+        requests
+        pyarrow
+        snowflake-connector-python
+        dbt-core==1.7.*
+        dbt-snowflake==1.7.*
+        scikit-learn==1.3.*
+        streamlit
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - .:/opt/project
+      - ./stock-app:/opt/project/stock-app
+    command: scheduler
+
+  streamlit:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./stock-app:/app
+    command: >
+      bash -lc "pip install --no-cache-dir -r requirements.txt &&
+                streamlit run app.py --server.address 0.0.0.0 --server.port 8501"
+    ports:
+      - "8502:8501" 
+    environment:
+      - PYTHONPATH=/app
+      - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT}
+      - SNOWFLAKE_USER=${SNOWFLAKE_USER}
+      - SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD}
+      - SNOWFLAKE_WAREHOUSE=${SNOWFLAKE_WAREHOUSE}
+      - SNOWFLAKE_DATABASE=${SNOWFLAKE_DATABASE}
+      - SNOWFLAKE_ROLE=${SNOWFLAKE_ROLE}
+    healthcheck:
+      test: ["CMD", "python", "-c",
+         "import urllib.request,sys; \
+          import json; \
+          try: \
+              r=urllib.request.urlopen('http://localhost:8501/_stcore/health',timeout=2); \
+              b=r.read().decode().lower(); \
+              sys.exit(0 if ('ok' in b or 'ready' in b or r.getcode()==200) else 1) \
+          except Exception: \
+              sys.exit(1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+
+
+
+volumes:
+  postgres-db-volume:

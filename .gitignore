@@ -1,0 +1,15 @@
+.env
+stock-app/.env
+__pycache__/
+*.pyc
+.airflow/
+airflow/logs/
+airflow/*.pid
+
+# dbt build artifacts
+dbt/marketpulse_dbt/target/
+dbt/marketpulse_dbt/dbt_packages/
+
+# virtual envs
+myenv/
+stock-app/.appenv
