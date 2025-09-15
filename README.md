@@ -88,7 +88,50 @@
 
 ## 🗂️ Repository Structure
 
-![](Images/Airflow%20Pipeline.png)
+├─ airflow/
+│ 	├─ dags/
+│ 	 	└─ marketpulse_pipeline.py # main DAG
+│ 	├─ scripts/
+     	└─ seed_connections.sh
+├─ Data_Ingestion/
+│ 		├─ db_utils.py
+│ 		├─ extract_news.py
+│ 		├─ extract_prices.py	
+│ 		├─  extract_earnings.py
+├─ dbt/
+│ ├─ marketpulse_dbt/
+│ 	   ├─ models/
+│ 	   		├─ staging/
+│      			└─ schema.yml
+│      			└─ stg_earnings.sql
+│      			└─ stg_news.sql
+│      			└─ stg_prices.sql
+│  	   		├─ intermediate
+│      			└─ int_earnings_clean.sql
+│      			└─ int_news_daily.sql
+│      			└─ int_prices_enriched.sql
+│ 	   		├─ marts/
+│      			└─ fct_earnings.sql
+│      			└─ fct_news_daily.sql
+│      			└─ fct_prices_daily.sql
+│      			└─ features_daily.sql
+│      		├─ sources.yml
+│      		├─ marts_schema.yml
+│  	   ├─ dbt_project.yml
+│ 	   ├─ profiles.yml 
+│ 	   ├─ packages.yml 
+│ ├─ .user.yml
+│ ├─ .profiles.yml
+├─ ml/
+│ └─ train_and_infer.py # trains & writes metrics/predictions
+├─ stock-app/ # Streamlit UI
+│ ├─ app.py
+│ ├─ db.py
+│ ├─ requirements.txt
+│ ├─ .env # app-only env
+├─ docker-compose.yml
+├─ .env # project env
+├─ requirements-airflow.txt
 
 ## 🧪 The Airflow DAG (what runs & in what order)
 
